@@ -16,11 +16,7 @@ jobs:
       - run:
           name: Run simple FastAPI test
           command: |
-            python - <<EOF
-            from main import app
-            assert app is not None
-            print("FastAPI app loaded successfully!")
-            EOF
+            python -c "from main import app; assert app is not None; print('FastAPI app loaded successfully!')"
       - python/save-cache
 
   build_docker_image:
@@ -31,7 +27,8 @@ jobs:
       - docker/check
       - run:
           name: Build Docker Image
-          command: docker build -t fastapi-circleci-demo .
+          command: |
+            docker build -t fastapi-circleci-demo .
       - run:
           name: Verify Docker Container
           command: |
