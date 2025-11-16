@@ -1,0 +1,48 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@2.0.3
+  docker: circleci/docker@2.1.0
+
+jobs:
+  build_and_test:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - python/load-cache
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: Run simple FastAPI test
+          command: |
+            python - <<EOF
+            from main import app
+            assert app is not None
+            print("FastAPI app loaded successfully!")
+            EOF
+      - python/save-cache
+
+  build_docker_image:
+    machine:
+      image: ubuntu-2204:2024.01.1
+    steps:
+      - checkout
+      - docker/check
+      - run:
+          name: Build Docker Image
+          command: docker build -t fastapi-circleci-demo .
+      - run:
+          name: Verify Docker Container
+          command: |
+            docker run -d -p 8000:8000 fastapi-circleci-demo
+            sleep 5
+            curl -f http://localhost:8000/
+
+workflows:
+  fastapi_pipeline:
+    jobs:
+      - build_and_test
+      - build_docker_image:
+          requires:
+            - build_and_test
