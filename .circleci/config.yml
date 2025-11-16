@@ -1,7 +1,6 @@
 version: 2.1
 
 orbs:
-  python: circleci/python@2.0.3
   docker: circleci/docker@2.1.0
 
 jobs:
@@ -10,14 +9,14 @@ jobs:
       - image: cimg/python:3.10
     steps:
       - checkout
-      - python/load-cache
-      - python/install-packages:
-          pkg-manager: pip
+      - run:
+          name: Install dependencies
+          command: |
+            pip install --no-cache-dir -r requirements.txt
       - run:
           name: Run simple FastAPI test
           command: |
             python -c "from main import app; assert app is not None; print('FastAPI app loaded successfully!')"
-      - python/save-cache
 
   build_docker_image:
     machine:
