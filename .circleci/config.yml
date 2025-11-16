@@ -13,19 +13,30 @@ jobs:
           name: Simple test
           command: python -c "print('FastAPI test passed')"
 
-  build_docker_image:
+  build_run_test_docker:
     machine:
       image: ubuntu-2204:2024.01.1
     steps:
       - checkout
+
       - run:
           name: Build Docker image
           command: docker build -t fastapi-circleci-demo .
+
+      - run:
+          name: Run Docker container
+          command: |
+            docker run -d -p 8000:8000 --name fastapi_container fastapi-circleci-demo
+            sleep 5
+
+      - run:
+          name: Test FastAPI endpoint
+          command: curl -f http://localhost:8000/
 
 workflows:
   fastapi_pipeline:
     jobs:
       - build_and_test
-      - build_docker_image:
+      - build_run_test_docker:
           requires:
             - build_and_test
