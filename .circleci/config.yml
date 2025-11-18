@@ -38,7 +38,7 @@ jobs:
 
       - run:
           name: Test FastAPI endpoint
-          command: curl -f http://localhost:8000/
+          command: curl -f http://localhost:8000/health
 
       - run:
           name: Push Docker image to DockerHub
