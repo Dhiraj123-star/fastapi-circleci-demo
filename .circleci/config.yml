@@ -7,6 +7,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Set PYTHONPATH for pytest
+          command: echo 'export PYTHONPATH=.' >> $BASH_ENV
+      - run:
           name: Install deps
           command: pip install -r requirements.txt
       - run:
