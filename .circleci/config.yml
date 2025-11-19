@@ -10,8 +10,8 @@ jobs:
           name: Install deps
           command: pip install -r requirements.txt
       - run:
-          name: Simple test
-          command: python -c "print('FastAPI test passed')"
+          name: Run pytest suite
+          command: pytest -q
 
   build_run_test_docker:
     machine:
