@@ -1,7 +1,8 @@
-# 🚀 FastAPI + Docker + CircleCI Pipeline (with DockerHub Deployment + Pytest + Health Check)
+
+# 🚀 FastAPI + Docker + CircleCI Pipeline (with DockerHub Deployment + Pytest + Health Check + Ingress)
 
 A minimal FastAPI application fully containerized with Docker and integrated into a complete CircleCI CI/CD pipeline.
-Now includes automated testing using **Pytest**, a **health check endpoint**, DockerHub deployment, and optional Kubernetes support.
+Now includes automated testing using **Pytest**, a **health check endpoint**, DockerHub deployment, Kubernetes support, and an **Ingress-based domain routing setup**.
 
 ---
 
@@ -13,10 +14,11 @@ Now includes automated testing using **Pytest**, a **health check endpoint**, Do
 * Dockerfile for containerized deployment
 * Docker Compose for local development (with `restart: "no"`)
 * CircleCI pipeline for continuous integration
-* Automated Docker image build, run, and endpoint testing
-* Automatic DockerHub login and image push after successful tests
+* Automated Docker image build, container run, and endpoint testing
+* Automatic DockerHub login and image push
 * Kubernetes-ready application
-* Kubernetes deployment pulling image from DockerHub
+* Kubernetes Deployment pulling image from DockerHub
+* **NGINX Ingress support for clean domain-based access (`http://fastapi.local`)**
 
 ---
 
@@ -32,7 +34,8 @@ fastapi-circleci-demo/
 │   └── test_app.py
 │── k8s/
 │   ├── deployment.yaml
-│   └── service.yaml
+│   ├── service.yaml
+│   └── ingress.yaml
 │── .circleci/
 │   └── config.yml
 │── README.md
@@ -42,24 +45,24 @@ fastapi-circleci-demo/
 
 ## 🔄 CI/CD Pipeline (CircleCI)
 
-The CircleCI workflow performs the following steps:
+The CircleCI workflow performs:
 
-1. Checks out the repository
-2. Installs Python dependencies
-3. Runs **Pytest tests**
-4. Builds the Docker image
-5. Runs the Docker container
-6. Tests FastAPI endpoints using `curl`
-7. Logs into DockerHub
-8. Pushes the Docker image to DockerHub
+1. Repository checkout
+2. Python dependency installation
+3. Running **Pytest**
+4. Building Docker image
+5. Running Docker container for endpoint testing
+6. Testing `/` and `/health` endpoints via `curl`
+7. DockerHub login
+8. Pushing the image to DockerHub
 
-Push to GitHub → CircleCI runs automatically.
+Just push your code → CircleCI runs automatically.
 
 ---
 
 ## 🧪 Testing (Pytest)
 
-### Run tests locally:
+Run tests locally:
 
 ```bash
 pip install -r requirements.txt
@@ -70,13 +73,16 @@ pytest -v
 
 ## 🩺 Health Check Endpoint
 
-Your FastAPI service includes a `/health` endpoint used by both local testing and CI.
+Included `/health` endpoint is used for:
+
+* Local health checks
+* CI/CD pipeline validation
+* Kubernetes readiness/liveness checks
+* Ingress backend testing
 
 ---
 
 ## 📦 Updated Docker Compose (No Auto-Restart)
-
-The Docker Compose setup now uses `restart: "no"` to prevent unnecessary restarts.
 
 Run locally:
 
@@ -86,14 +92,22 @@ docker compose up --build
 
 ---
 
-## ☸️ Kubernetes Support (Using DockerHub Image)
+## ☸️ Kubernetes Support (DockerHub-Based Deployment)
 
 This project includes Kubernetes manifests for:
 
-* Deployment (pulling image from DockerHub)
-* Service (NodePort for Minikube access)
+* Deployment (pulling latest image from DockerHub)
+* NodePort Service
+* **NGINX Ingress for domain-based access**
 
-You can deploy locally using:
+  * Access the app using:
+
+    ```
+    http://fastapi.local
+    http://fastapi.local/health
+    ```
+
+Apply manifests:
 
 ```bash
 kubectl apply -f k8s/
@@ -103,7 +117,7 @@ kubectl apply -f k8s/
 
 ## 🔐 DockerHub Deployment Setup
 
-Set environment variables in CircleCI:
+Add these in CircleCI:
 
 * `DOCKERHUB_USERNAME`
 * `DOCKERHUB_PASSWORD`
@@ -119,7 +133,9 @@ This project now includes:
 ✔ Pytest
 ✔ CircleCI CI/CD
 ✔ DockerHub deployment
-✔ Kubernetes support
+✔ Kubernetes Deployment + Service
+✔ **NGINX Ingress support**
+✔ Clean domain access
 ✔ Health check endpoint
 
 ---
