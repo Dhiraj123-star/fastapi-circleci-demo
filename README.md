@@ -1,27 +1,28 @@
 # 🚀 FastAPI + Docker + CircleCI Pipeline (with DockerHub Deployment + Pytest + Health Check)
 
-A minimal FastAPI application fully containerized with Docker and integrated into a complete CircleCI CI/CD pipeline.  
-Now includes automated testing using **Pytest**, a **health check endpoint**, and DockerHub image deployment.
+A minimal FastAPI application fully containerized with Docker and integrated into a complete CircleCI CI/CD pipeline.
+Now includes automated testing using **Pytest**, a **health check endpoint**, DockerHub deployment, and optional Kubernetes support.
 
 ---
 
 ## 📦 Features
 
-- Lightweight FastAPI application  
-- `/health` endpoint for health checks  
-- Pytest-based testing  
-- Dockerfile for containerized deployment  
-- Docker Compose for local development  
-- CircleCI pipeline for continuous integration  
-- Automated Docker image build, run, and endpoint testing  
-- Automatic DockerHub login and image push after successful tests  
+* Lightweight FastAPI application
+* `/health` endpoint for health checks
+* Pytest-based testing
+* Dockerfile for containerized deployment
+* Docker Compose for local development (with `restart: "no"`)
+* CircleCI pipeline for continuous integration
+* Automated Docker image build, run, and endpoint testing
+* Automatic DockerHub login and image push after successful tests
+* Kubernetes-ready application
+* Kubernetes deployment pulling image from DockerHub
 
 ---
 
 ## 🏗 Project Structure
 
 ```
-
 fastapi-circleci-demo/
 │── main.py
 │── Dockerfile
@@ -29,11 +30,13 @@ fastapi-circleci-demo/
 │── requirements.txt
 │── tests/
 │   └── test_app.py
+│── k8s/
+│   ├── deployment.yaml
+│   └── service.yaml
 │── .circleci/
 │   └── config.yml
 │── README.md
-
-````
+```
 
 ---
 
@@ -41,91 +44,82 @@ fastapi-circleci-demo/
 
 The CircleCI workflow performs the following steps:
 
-1. Checks out the repository  
-2. Installs Python dependencies  
-3. Runs **Pytest tests**, including:
-   - Root endpoint (`/`)
-   - Health check endpoint (`/health`)
-4. Builds the Docker image  
-5. Runs the Docker container  
-6. Tests the running FastAPI endpoint using `curl`  
-7. Logs into DockerHub  
-8. Pushes the Docker image to DockerHub  
+1. Checks out the repository
+2. Installs Python dependencies
+3. Runs **Pytest tests**
+4. Builds the Docker image
+5. Runs the Docker container
+6. Tests FastAPI endpoints using `curl`
+7. Logs into DockerHub
+8. Pushes the Docker image to DockerHub
 
-Just push your code → CircleCI runs automatically.
+Push to GitHub → CircleCI runs automatically.
 
 ---
 
 ## 🧪 Testing (Pytest)
 
-A simple test suite is included:
-
-### Run locally:
+### Run tests locally:
 
 ```bash
 pip install -r requirements.txt
 pytest -v
-````
-
-### Example test file:
-
-```
-tests/test_app.py
 ```
 
 ---
 
 ## 🩺 Health Check Endpoint
 
-Your FastAPI service includes:
-
-```python
-@app.get("/health")
-def health():
-    return {"status": "ok", "message": "Service is healthy!"}
-```
-
-CircleCI also tests this endpoint during the pipeline.
+Your FastAPI service includes a `/health` endpoint used by both local testing and CI.
 
 ---
 
-## 🔐 DockerHub Deployment Setup
+## 📦 Updated Docker Compose (No Auto-Restart)
 
-Before the pipeline can push images:
+The Docker Compose setup now uses `restart: "no"` to prevent unnecessary restarts.
 
-1. Go to **Project Settings → Environment Variables → Add Variables**
-2. Add:
-
-   * `DOCKERHUB_USERNAME` → your DockerHub username
-   * `DOCKERHUB_PASSWORD` → your DockerHub password / access token
-
-After saving, re-run the workflow.
-
----
-
-## ▶️ Running the App Locally (Docker Compose)
+Run locally:
 
 ```bash
 docker compose up --build
 ```
 
-The app will be available at:
+---
 
-👉 [http://localhost:8000](http://localhost:8000)
-👉 [http://localhost:8000/health](http://localhost:8000/health)
+## ☸️ Kubernetes Support (Using DockerHub Image)
+
+This project includes Kubernetes manifests for:
+
+* Deployment (pulling image from DockerHub)
+* Service (NodePort for Minikube access)
+
+You can deploy locally using:
+
+```bash
+kubectl apply -f k8s/
+```
+
+---
+
+## 🔐 DockerHub Deployment Setup
+
+Set environment variables in CircleCI:
+
+* `DOCKERHUB_USERNAME`
+* `DOCKERHUB_PASSWORD`
 
 ---
 
 ## 🎉 You're All Set
 
-This project now has:
+This project now includes:
 
 ✔ FastAPI
-✔ Docker
-✔ Docker Compose
+✔ Docker & Docker Compose
 ✔ Pytest
-✔ CircleCI build pipeline
+✔ CircleCI CI/CD
 ✔ DockerHub deployment
+✔ Kubernetes support
 ✔ Health check endpoint
 
 ---
