@@ -6,6 +6,10 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx 
+  tls:
+    - hosts:
+        - fastapi.local
+      secretName: fastapi-tls # TLS secret(created from self-signed cert)
   rules:
     - host: fastapi.local
       http:
