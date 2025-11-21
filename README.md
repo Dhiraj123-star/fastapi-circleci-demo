@@ -1,28 +1,30 @@
 
-# 🚀 FastAPI + Docker + CircleCI Pipeline (with DockerHub Deployment + Pytest + Health Check + Ingress)
+# 🚀 FastAPI + Docker + CircleCI Pipeline (DockerHub + Pytest + Health Check + K8s + Ingress + TLS/SSL)
 
 A minimal FastAPI application fully containerized with Docker and integrated into a complete CircleCI CI/CD pipeline.
-Now includes automated testing using **Pytest**, a **health check endpoint**, DockerHub deployment, Kubernetes support, and an **Ingress-based domain routing setup**.
+Now includes automated testing with **Pytest**, Kubernetes deployment, **NGINX Ingress**, **domain-based access**, and **HTTPS using self-signed TLS certificates**.
 
 ---
 
-## 📦 Features
+# ⭐ Core Features (Updated)
 
 * Lightweight FastAPI application
-* `/health` endpoint for health checks
+* `/health` endpoint for readiness/liveness checks
 * Pytest-based testing
-* Dockerfile for containerized deployment
-* Docker Compose for local development (with `restart: "no"`)
-* CircleCI pipeline for continuous integration
-* Automated Docker image build, container run, and endpoint testing
-* Automatic DockerHub login and image push
-* Kubernetes-ready application
+* Dockerfile + Docker Compose for local development
+* CircleCI CI/CD pipeline
+* Automated Docker image build, run, and endpoint testing
+* DockerHub login + image push
+* Kubernetes-ready deployment
 * Kubernetes Deployment pulling image from DockerHub
-* **NGINX Ingress support for clean domain-based access (`http://fastapi.local`)**
+* NGINX Ingress for domain routing (`fastapi.local`)
+* **HTTPS support with self-signed TLS certificate (`https://fastapi.local`)**
+* TLS secret stored securely in Kubernetes
+* Easy local testing via Minikube Ingress
 
 ---
 
-## 🏗 Project Structure
+# 🏗 Project Structure
 
 ```
 fastapi-circleci-demo/
@@ -36,6 +38,7 @@ fastapi-circleci-demo/
 │   ├── deployment.yaml
 │   ├── service.yaml
 │   └── ingress.yaml
+│── certs/ (ignored in git)
 │── .circleci/
 │   └── config.yml
 │── README.md
@@ -43,24 +46,84 @@ fastapi-circleci-demo/
 
 ---
 
-## 🔄 CI/CD Pipeline (CircleCI)
+# 🔐 HTTPS + Self-Signed Certificate Setup (Minikube)
 
-The CircleCI workflow performs:
+### 1️⃣ Create a folder for certificates (already ignored in `.gitignore`)
 
-1. Repository checkout
-2. Python dependency installation
-3. Running **Pytest**
-4. Building Docker image
-5. Running Docker container for endpoint testing
-6. Testing `/` and `/health` endpoints via `curl`
-7. DockerHub login
-8. Pushing the image to DockerHub
+```
+mkdir certs
+```
 
-Just push your code → CircleCI runs automatically.
+### 2️⃣ Generate a self-signed certificate
+
+```
+openssl req -x509 -newkey rsa:4096 -sha256 -nodes \
+  -keyout certs/fastapi.local.key \
+  -out certs/fastapi.local.crt \
+  -days 365 \
+  -subj "/CN=fastapi.local"
+```
+
+### 3️⃣ Create a Kubernetes TLS secret
+
+```
+kubectl create secret tls fastapi-tls \
+  --cert=certs/fastapi.local.crt \
+  --key=certs/fastapi.local.key
+```
+
+### 4️⃣ Enable NGINX Ingress (important)
+
+```
+minikube addons enable ingress
+```
+
+### 5️⃣ Apply manifests
+
+```
+kubectl apply -f k8s/
+```
+
+### 6️⃣ Add host entry
+
+```
+sudo nano /etc/hosts
+```
+
+Add:
+
+```
+127.0.0.1   fastapi.local
+```
+
+### 7️⃣ Access HTTPS
+
+```
+https://fastapi.local
+https://fastapi.local/health
+```
+
+(You will accept the browser trust warning because self-signed.)
 
 ---
 
-## 🧪 Testing (Pytest)
+# 🔄 CI/CD Pipeline (CircleCI)
+
+The CircleCI workflow:
+
+1. Checkout repository
+2. Install Python dependencies
+3. Run Pytest
+4. Build Docker image
+5. Run container and test endpoints
+6. DockerHub login
+7. Push image to DockerHub
+
+Push code → pipeline runs automatically.
+
+---
+
+# 🧪 Testing (Pytest)
 
 Run tests locally:
 
@@ -71,18 +134,18 @@ pytest -v
 
 ---
 
-## 🩺 Health Check Endpoint
+# 🩺 Health Check Endpoint
 
-Included `/health` endpoint is used for:
+Used by:
 
-* Local health checks
-* CI/CD pipeline validation
-* Kubernetes readiness/liveness checks
-* Ingress backend testing
+* Local Docker testing
+* CI/CD pipeline `curl` checks
+* Kubernetes readiness/liveness probes
+* Ingress backend validation
 
 ---
 
-## 📦 Updated Docker Compose (No Auto-Restart)
+# 📦 Docker Compose (No Auto-Restart)
 
 Run locally:
 
@@ -92,22 +155,16 @@ docker compose up --build
 
 ---
 
-## ☸️ Kubernetes Support (DockerHub-Based Deployment)
+# ☸️ Kubernetes (Minikube) Deployment
 
-This project includes Kubernetes manifests for:
+Manifests include:
 
-* Deployment (pulling latest image from DockerHub)
-* NodePort Service
-* **NGINX Ingress for domain-based access**
+✔ Deployment
+✔ Service (NodePort)
+✔ Ingress (HTTP + HTTPS/TLS)
+✔ TLS secret support
 
-  * Access the app using:
-
-    ```
-    http://fastapi.local
-    http://fastapi.local/health
-    ```
-
-Apply manifests:
+Apply:
 
 ```bash
 kubectl apply -f k8s/
@@ -115,27 +172,27 @@ kubectl apply -f k8s/
 
 ---
 
-## 🔐 DockerHub Deployment Setup
+# 🔐 DockerHub Deployment Setup
 
-Add these in CircleCI:
+Add these in CircleCI Project Settings:
 
 * `DOCKERHUB_USERNAME`
 * `DOCKERHUB_PASSWORD`
 
 ---
 
-## 🎉 You're All Set
+# 🎉 You’re All Set
 
-This project now includes:
+This project now supports:
 
 ✔ FastAPI
-✔ Docker & Docker Compose
-✔ Pytest
+✔ Docker + Docker Compose
 ✔ CircleCI CI/CD
-✔ DockerHub deployment
-✔ Kubernetes Deployment + Service
-✔ **NGINX Ingress support**
-✔ Clean domain access
-✔ Health check endpoint
+✔ DockerHub deploy
+✔ Pytest
+✔ Kubernetes deployment
+✔ NGINX Ingress
+✔ **HTTPS with self-signed TLS**
+✔ Clean domain-based access
 
 ---
