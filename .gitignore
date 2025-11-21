@@ -1,0 +1,10 @@
+# Ignore TLS/SSL certificates and keys
+*.crt
+*.key
+*.pem
+*.pfx
+*.cer
+*.der
+*.jks
+*.p12
+*.csr   
