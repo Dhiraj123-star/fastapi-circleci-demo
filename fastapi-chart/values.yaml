@@ -1,0 +1,59 @@
+replicaCount: 2
+
+image:
+  repository: dhiraj918106/fastapi-circleci-demo
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8000
+  nodePort: 30080
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts: 
+    - host: fastapi.local
+      paths: 
+        - path: /
+          pathType: Prefix
+  
+  tls:
+    - secretName: fastapi-tls
+      hosts:
+        - fastapi.local
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+
+livenessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 2
+  failureThreshold: 3
+  successThreshold: 1
+
+serviceAccount:
+  create: true
+  name: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
