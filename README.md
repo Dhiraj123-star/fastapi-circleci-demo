@@ -1,109 +1,140 @@
 
-# 🚀 FastAPI + Docker + CircleCI Pipeline
+# 🚀 FastAPI + Docker + CircleCI + Helm + Kubernetes
 
-(DockerHub + Pytest + Health Check + **Helm Chart** + K8s + Ingress + TLS/SSL + Probes)
-
-A minimal FastAPI application fully containerized with Docker and integrated into a complete CircleCI CI/CD pipeline.
-Now includes automated testing with **Pytest**, a Kubernetes deployment with **readiness/liveness probes**, **NGINX Ingress**, **domain-based routing**, **HTTPS using self-signed TLS certificates**, and a **production-ready Helm chart for Kubernetes deployment**.
+A production-ready FastAPI application fully containerized with Docker and integrated into an automated **CI/CD pipeline using CircleCI**.
+The project includes **Pytest testing**, **DockerHub publishing**, and a complete **Kubernetes deployment workflow** using a **Helm chart**, **NGINX Ingress**, **TLS/SSL**, and **readiness/liveness probes**.
 
 ---
 
-# ⭐ Core Features (Updated)
+# ✨ Features Overview
 
-* Lightweight FastAPI application
-* `/health` endpoint for all health checks
-* Pytest-based testing
-* Dockerfile + Docker Compose for local development
-* CircleCI CI/CD pipeline
-* Automated Docker image build, run, and endpoint testing
-* DockerHub login + image push
-* Kubernetes-ready deployment
-* Kubernetes Deployment pulling image from DockerHub
+### 🔧 Application & Development
 
-### **🆕 Added: Helm Chart Deployment**
+* Lightweight **FastAPI** application
+* `/health` endpoint for health checks and probes
+* **Dockerfile** + **Docker Compose** for local development
 
-* Production-ready Helm chart (`fastapi-chart/`)
-* Deploy FastAPI on K8s using:
+### 🧪 Testing
 
-  ```
-  helm install fastapi ./fastapi-chart
-  ```
-* Helm values support:
+* Fully automated test suite using **Pytest**
+* CI pipeline verifies health endpoint before deployment
 
-  * replicaCount
-  * image repository & tag
-  * NodePort
-  * NGINX Ingress + TLS
-  * Readiness & Liveness probe config
-  * Autoscaling toggle
-* Fully parameterized Deployment, Service, and Ingress
-* Support for upgrading:
+### 🚀 CI/CD (CircleCI)
 
-  ```
-  helm upgrade fastapi ./fastapi-chart
-  ```
+* Automatic:
+
+  * Dependency installation
+  * Pytest execution
+  * Docker image build
+  * Local container health test
+  * DockerHub login and image push
+
+### ☸️ Kubernetes Deployment
+
+* Complete Kubernetes manifests
+* NGINX Ingress for domain routing (`fastapi.local`)
+* Readiness and Liveness probes enabled
+* HTTPS support with self-signed TLS certificates
+
+### 🆕 Helm Chart (Production-Ready)
+
+A fully parameterized Helm chart for deploying the application to Kubernetes with customizable settings for:
+
+* replicaCount
+* image repo/tag
+* NodePort configuration
+* Ingress + TLS
+* Autoscaling toggle
+* Probe configuration
 
 ---
 
-# 📦 New: Helm Chart Structure
+# 📦 Project Structure
 
 ```
-fastapi-chart/
-│── Chart.yaml
-│── values.yaml
-│── templates/
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   ├── ingress.yaml
-│   └── NOTES.txt
+fastapi-circleci-demo/
+│── main.py
+│── Dockerfile
+│── docker-compose.yml
+│── requirements.txt
+│── tests/
+│   └── test_app.py
+│── fastapi-chart/     ← Helm Chart (new)
+│   ├── Chart.yaml
+│   ├── values.yaml
+│   └── templates/
+│       ├── deployment.yaml
+│       ├── service.yaml
+│       ├── ingress.yaml
+│       └── NOTES.txt
+│── certs/             (ignored in Git)
+│── .circleci/
+│   └── config.yml
+│── README.md
 ```
-
-The chart automatically deploys your app with:
-
-✔ Deployment
-✔ NodePort Service
-✔ Ingress (HTTP + HTTPS/TLS)
-✔ Readiness & Liveness Probes
-✔ Replica scaling
-✔ Custom image configuration
 
 ---
 
-# 🛠 Deploy Using Helm
+# 🛠 Helm Chart Deployment
 
-### 1️⃣ Install the Helm chart
+### 1. Install the chart
 
 ```
 helm install fastapi ./fastapi-chart
 ```
 
-### 2️⃣ Upgrade after changes
+### 2. Upgrade after updates
 
 ```
 helm upgrade fastapi ./fastapi-chart
 ```
 
-### 3️⃣ Uninstall
+### 3. Uninstall
 
 ```
 helm uninstall fastapi
 ```
 
----
+### 4. View release
 
-# 📊 Kubernetes Probes (Already Supported)
-
-Your Deployment uses:
-
-✔ Readiness Probe
-✔ Liveness Probe
-✔ `/health` endpoint for both
+```
+helm list
+```
 
 ---
 
-# 🔐 HTTPS + Self-Signed Certificate Setup (Minikube)
+# 📊 Kubernetes Readiness & Liveness Probes
 
-(unchanged — works with both raw YAML & Helm)
+The application exposes:
+
+```
+/health
+```
+
+This endpoint is used for:
+
+* Readiness Probe (traffic only when app is ready)
+* Liveness Probe (automatic restart on app failure)
+* CI/CD health verification
+* Docker health testing
+
+The probe configuration is fully customizable in `values.yaml`.
+
+---
+
+# 🔐 TLS/SSL Setup (Minikube + Ingress)
+
+### Generate self-signed certificate
+
+```
+openssl req -x509 -newkey rsa:4096 -sha256 -nodes \
+  -keyout certs/fastapi.local.key \
+  -out certs/fastapi.local.crt \
+  -days 365 \
+  -subj "/CN=fastapi.local"
+```
+
+### Create Kubernetes TLS secret
 
 ```
 kubectl create secret tls fastapi-tls \
@@ -111,59 +142,83 @@ kubectl create secret tls fastapi-tls \
   --key=certs/fastapi.local.key
 ```
 
-The Helm chart automatically detects and uses this TLS secret through `values.yaml`.
+### Add host entry
+
+```
+127.0.0.1   fastapi.local
+```
+
+When Ingress is enabled, the application becomes available at:
+
+```
+https://fastapi.local
+```
 
 ---
 
-# 🔄 CI/CD Pipeline (CircleCI)
+# 🔄 CircleCI Pipeline
 
-(unchanged)
+The CircleCI workflow performs:
 
----
+1. Project checkout
+2. Dependency installation
+3. Pytest execution
+4. Docker image build
+5. Containerized health check
+6. DockerHub authentication
+7. Docker image push
 
-# 🧪 Testing (Pytest)
-
-(unchanged)
-
----
-
-# 📦 Docker Compose
-
-(unchanged)
+This ensures that the Kubernetes cluster always pulls the latest verified image.
 
 ---
 
-# ☸️ Kubernetes Deployment (using Helm)
+# 🧪 Running Tests Locally
 
-Now preferred over raw YAML.
+```
+pip install -r requirements.txt
+pytest -v
+```
+
+---
+
+# 🐳 Local Development with Docker Compose
+
+```
+docker compose up --build
+```
+
+---
+
+# ☸️ Kubernetes Deployment Options
+
+### Option 1 — **Preferred**: Helm
 
 ```
 helm install fastapi ./fastapi-chart
 ```
 
-Includes:
+### Option 2 — Raw YAML (if needed)
 
-✔ Deployment
-✔ NodePort Service
-✔ NGINX Ingress
-✔ HTTPS/TLS
-✔ Probes
-✔ Replicas
+```
+kubectl apply -f k8s/
+```
 
 ---
 
-# 🎉 You’re All Set
+# 📌 Summary
 
-Your project now supports:
+This project provides a complete, production-ready setup including:
 
-✔ FastAPI
-✔ Docker & Docker Compose
-✔ CircleCI CI/CD
-✔ DockerHub push
-✔ **Helm-based Kubernetes deployment**
-✔ Readiness & Liveness Probes
-✔ NGINX Ingress
-✔ TLS/HTTPS
-✔ Clean domain routing
+* FastAPI application
+* Docker & Docker Compose
+* Automated CI/CD via CircleCI
+* DockerHub publishing
+* Helm-based Kubernetes deployment
+* Readiness & Liveness Probes
+* NGINX Ingress
+* TLS/SSL
+* Domain-based routing
+
+It is designed to be **scalable**, **automated**, and **cloud-ready**.
 
 ---
